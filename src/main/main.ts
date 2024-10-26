@@ -1,6 +1,8 @@
+require('dotenv').config();
 import { app, BrowserWindow, ipcMain } from 'electron';
 import * as path from 'path';
-
+// In main.ts
+import {  systemPreferences } from 'electron';
 import { RecorderService } from '../services/recorder.service';
 import { PlayerService } from '../services/player.service';
 
@@ -56,3 +58,21 @@ ipcMain.handle('stop-recording', async () => {
 ipcMain.handle('execute-basic-code', async (_, code: string) => {
   await player.executeBasicCode(code);
 });
+
+
+// Add microphone permission check for macOS
+ipcMain.handle('check-microphone-permission', async () => {
+  if (process.platform === 'darwin') {
+    const status = await systemPreferences.getMediaAccessStatus('microphone');
+    if (status !== 'granted') {
+      const success = await systemPreferences.askForMediaAccess('microphone');
+      return success;
+    }
+    return true;
+  }
+  // On Windows/Linux, permissions are handled by the OS
+  return true;
+});
+
+// Enable required permissions
+app.commandLine.appendSwitch('enable-speech-dispatcher');

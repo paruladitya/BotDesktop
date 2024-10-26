@@ -23,8 +23,11 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+require('dotenv').config();
 const electron_1 = require("electron");
 const path = __importStar(require("path"));
+// In main.ts
+const electron_2 = require("electron");
 const recorder_service_1 = require("../services/recorder.service");
 const player_service_1 = require("../services/player.service");
 const recorder = new recorder_service_1.RecorderService();
@@ -70,3 +73,18 @@ electron_1.ipcMain.handle('stop-recording', async () => {
 electron_1.ipcMain.handle('execute-basic-code', async (_, code) => {
     await player.executeBasicCode(code);
 });
+// Add microphone permission check for macOS
+electron_1.ipcMain.handle('check-microphone-permission', async () => {
+    if (process.platform === 'darwin') {
+        const status = await electron_2.systemPreferences.getMediaAccessStatus('microphone');
+        if (status !== 'granted') {
+            const success = await electron_2.systemPreferences.askForMediaAccess('microphone');
+            return success;
+        }
+        return true;
+    }
+    // On Windows/Linux, permissions are handled by the OS
+    return true;
+});
+// Enable required permissions
+electron_1.app.commandLine.appendSwitch('enable-speech-dispatcher');

@@ -5,12 +5,12 @@
         "name": "Electron: Main",
         "type": "node",
         "request": "launch",
-        "program": "${workspaceFolder}/node_modules/electron/dist/electron.js",
+        "sourceMaps": true,
         "args": ["${workspaceFolder}/dist/main/main.js"],
         "outFiles": ["${workspaceFolder}/dist/**/*.js"],
         "cwd": "${workspaceFolder}",
-        "sourceMaps": true,
         "protocol": "inspector",
+        "console": "integratedTerminal",
         "windows": {
           "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/electron.cmd"
         },
