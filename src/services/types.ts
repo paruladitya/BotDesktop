@@ -1,3 +1,22 @@
+
+export interface PlaybackEvent {
+  command: string;
+  args: string[];
+  description?: string;
+}
+
+export interface ScreenElement {
+  identifier: string;
+  bounds: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  };
+  windowName: string;
+  value?: string;
+}
+
 export interface AutomationAction {
   type: 'click' | 'type' | 'move';
   identifier: string;
@@ -12,6 +31,12 @@ export interface AutomationAction {
 }
 
 
+export interface EventGroup {
+  narration: string;
+  events: AutomationEvent[];
+  screenshot: string;
+  timestamp: number;
+}
 
 export interface AutomationEvent {
   type: 'click' | 'type' | 'move';
@@ -30,6 +55,7 @@ export interface ScreenContext {
   screenshot: string;
   transcription: string;
   cursorPosition: { x: number, y: number };
+  identifier: string;
 }
 
 export interface ScreenAnalysis {

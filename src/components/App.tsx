@@ -36,10 +36,10 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="p-4">
-      <h1 className="text-2xl font-bold mb-4">BotDesktop Automation</h1>
+    <div className="p-4 h-auto">
+      <h1 className="text-2xl font-bold mb-4">General Bots Desktop</h1>
       
-      <div className="space-x-4 mb-4">
+      <div className="space-x-4 mb-4 h-auto">
         <button
           className={`px-4 py-2 rounded ${recording ? 'bg-red-500' : 'bg-blue-500'} text-white`}
           onClick={recording ? handleStopRecording : handleStartRecording}
@@ -56,11 +56,19 @@ const App: React.FC = () => {
         </button>
       </div>
 
-      <div className="mt-4">
+      <div className="mt-4 h-20">
         <h2 className="text-xl font-bold mb-2">Generated BASIC Code:</h2>
-        <pre className="bg-gray-100 p-2 rounded border">{basicCode}</pre>
+        <pre className="h-20 min-h-100 bg-gray-100 p-2 rounded border">{basicCode}</pre>
       </div>
+
+      
+      <div className="mb-4">
+        
+        <a href="https://github.com/General Bots">General Bots</a>
+      </div>
+
     </div>
+    
   );
 };
 

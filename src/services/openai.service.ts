@@ -56,7 +56,7 @@ export class OpenAIService {
             role: 'system',
             content: `You are an AI that analyzes screenshots and voice commands to determine user intentions for automation.
                      You should identify UI elements and return specific actions in JSON format.
-                     Focus on the area near the cursor position when relevant.`
+                     Focus on the area near the field ${context.identifier}.`
           },
           {
             role: 'user',
