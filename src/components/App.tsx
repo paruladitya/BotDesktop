@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { RecorderService } from '../services/recorder.service';
 import { PlayerService } from '../services/player.service';
 
-const recorder = new RecorderService();
-const player = new PlayerService();
+const recorder = new RecorderService(window);
+const player = new PlayerService(window);
 
 const App: React.FC = () => {
   const [recording, setRecording] = useState(false);

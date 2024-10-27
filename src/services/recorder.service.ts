@@ -1,4 +1,4 @@
-import { ipcRenderer } from 'electron';
+import { desktopCapturer, ipcMain, ipcRenderer } from 'electron';
 import { AutomationEvent, EventGroup, ScreenAnalysis, WhisperResponse } from '../services/types';
 import { OpenAIService } from '../services/openai.service';
 import * as path from 'path';
@@ -18,8 +18,10 @@ export class RecorderService {
   private SILENCE_THRESHOLD = 0.01;
   private SILENCE_DURATION = 1500; // 1.5 seconds of silence to trigger processing
   private MIN_AUDIO_DURATION = 500; // Minimum audio duration to process
+  window: any;
 
-  constructor() {
+  constructor(window: any) {
+    this.window = window;
     console.log('RecorderService.constructor()');
     this.openAIService = new OpenAIService();
     this.tempDir = path.join(process.cwd(), 'temp_recordings');
@@ -39,7 +41,9 @@ export class RecorderService {
       this.eventGroups = [];
       this.currentEvents = [];
       await this.startMicrophoneCapture();
-      await this.captureInitialScreenshot();
+      //@ts-ignore
+      const screen = await ipcRenderer.invoke('get-screenshot');
+      console.log(screen);
       this.setupEventListeners();
     } catch (error) {
       console.error('RecorderService.startRecording() error:', error);
@@ -48,22 +52,22 @@ export class RecorderService {
     }
   }
 
-  getMicrophoneStream(): MediaStream | null {
+  getStream(): MediaStream | null {
     if (typeof window !== 'undefined') {
       //@ts-ignore
-        return window.getMicrophoneStream();
+      return window.screenStream;
     }
     return null;
-}
+  }
+ 
   private async startMicrophoneCapture() {
     console.log('RecorderService.startMicrophoneCapture()');
     try {
       this.isListeningToMicrophone = true;
-      ipcRenderer.on('audio-level', this.handleAudioLevel);
-      ipcRenderer.on('audio-chunk', this.handleAudioChunk);
-      const stream = this.getMicrophoneStream();
+      await ipcRenderer.on('audio-level', this.handleAudioLevel);
+      await ipcRenderer.on('audio-chunk', this.handleAudioChunk);
+      await ipcRenderer.invoke('start-microphone-capture');
       
-      console.log('Got Stream');
 
     } catch (error) {
       console.error('Failed to start microphone capture:', error);
@@ -72,6 +76,7 @@ export class RecorderService {
   }
 
   public handleAudioLevel = (_: any, level: number) => {
+    console.log('handleAudioLevel');
     if (!this.recording || !this.isListeningToMicrophone) return;
 
     if (level < this.SILENCE_THRESHOLD) {
@@ -91,6 +96,7 @@ export class RecorderService {
   }
 
   public handleAudioChunk = (_: any, chunk: Buffer) => {
+    console.log('handleAudioChunk');
     if (!this.recording || !this.isListeningToMicrophone) return;
     this.audioBuffer.push(chunk);
   }
@@ -134,7 +140,8 @@ export class RecorderService {
 
     this.eventGroups.push(eventGroup);
     this.currentEvents = []; // Clear current events for next group
-    await this.captureInitialScreenshot(); // Get fresh screenshot for next group
+    //@ts-ignore
+    await window.getSreenshot(); // Get fresh screenshot for next group
   }
 
   private setupEventListeners() {
@@ -142,10 +149,6 @@ export class RecorderService {
     ipcRenderer.on('mouse-event', this.handleMouseEvent);
   }
 
-  private async captureInitialScreenshot() {
-    const sources = await ipcRenderer.invoke('get-screenshot');
-    this.currentScreenshot = sources[0].thumbnail;
-  }
 
   public handleKeyboardEvent = async (_: any, event: KeyboardEvent) => {
     if (!this.recording) return;

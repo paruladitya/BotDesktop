@@ -12,6 +12,7 @@
     "rootDir": "src",
     "moduleResolution": "node",
     "resolveJsonModule": true,
+    
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"]

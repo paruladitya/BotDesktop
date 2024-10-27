@@ -15,8 +15,10 @@ export class PlayerService {
   private openAIService: OpenAIService;
   private currentScreenshot: string = '';
   private isPlaying: boolean = false;
+  window: any;
 
-  constructor() {
+  constructor(window: any) {
+    this.window  = window;
     console.log('[PlayerService] Initializing');
     this.openAIService = new OpenAIService();
   }
