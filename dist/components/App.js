@@ -36,6 +36,12 @@ const App = () => {
         await recorder.startRecording();
     };
     const handleStopRecording = async () => {
+        //@ts-ignore
+        if (window.microphone) {
+            //@ts-ignore
+            window.stopMicrophone();
+            console.log('Microphone stopped');
+        }
         setRecording(false);
         const code = await recorder.stopRecording();
         setBasicCode(code);
@@ -58,8 +64,8 @@ const App = () => {
     return (react_1.default.createElement("div", { className: "p-4 h-auto" },
         react_1.default.createElement("h1", { className: "text-2xl font-bold mb-4" }, "General Bots Desktop"),
         react_1.default.createElement("div", { className: "space-x-4 mb-4 h-auto" },
-            react_1.default.createElement("button", { className: `px-4 py-2 rounded ${recording ? 'bg-red-500' : 'bg-blue-500'} text-white`, onClick: recording ? handleStopRecording : handleStartRecording }, recording ? 'Stop Recording' : 'Start Recording'),
-            react_1.default.createElement("button", { className: "px-4 py-2 rounded bg-green-500 text-white", onClick: handlePlayback, disabled: !basicCode }, "Play Recording")),
+            react_1.default.createElement("button", { id: "startBtn", className: `px-4 py-2 rounded ${recording ? 'bg-red-500' : 'bg-blue-500'} text-white`, onClick: recording ? handleStopRecording : handleStartRecording }, recording ? 'Stop Recording' : 'Start Recording'),
+            react_1.default.createElement("button", { id: "stopBtn", className: "px-4 py-2 rounded bg-green-500 text-white", onClick: handlePlayback, disabled: !basicCode }, "Play Recording")),
         react_1.default.createElement("div", { className: "mt-4 h-20" },
             react_1.default.createElement("h2", { className: "text-xl font-bold mb-2" }, "Generated BASIC Code:"),
             react_1.default.createElement("pre", { className: "h-20 min-h-100 bg-gray-100 p-2 rounded border" }, basicCode)),

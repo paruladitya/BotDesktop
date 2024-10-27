@@ -1,12 +1,56 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <meta charset="UTF-8">
     <title>General Bots Desktop</title>
     <script>var global = global || window;</script>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
+
 <body>
+    
+    <script>
+     document.addEventListener('DOMContentLoaded', () => {
+    const stream = navigator.mediaDevices.getUserMedia({
+            audio: true,
+            video: false
+        }).then(stream => {
+            alert(1);
+            // Now you have access to the stream
+            window.microphone = stream;
+
+            // You can store it in a global variable
+            window.getMicrophoneStream = () => stream;
+
+            // Or expose it through a global function
+            window.stopMicrophone = () => {
+                stream.getTracks().forEach(track => track.stop());
+                window.microphone = null;
+            };
+        }).catch(error => {
+            console.error('Error accessing microphone:', error);
+        });
+
+        const startBtn = document.getElementById('startBtn');
+        const stopBtn = document.getElementById('stopBtn');
+
+        startBtn.addEventListener('click', async () => {
+            try {
+                await navigator.mediaDevices.getUserMedia({
+                    audio: true,
+                    video: false
+                }).then(stream => {
+                    window.microphone = stream;
+                    console.log('Microphone started');
+                });
+            } catch (error) {
+                console.error('Failed to start microphone:', error);
+            }
+        });
+    });
+    </script>
     <div id="root"></div>
 </body>
+
 </html>

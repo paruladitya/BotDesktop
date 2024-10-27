@@ -10,11 +10,18 @@ const App: React.FC = () => {
   const [basicCode, setBasicCode] = useState('');
 
   const handleStartRecording = async () => {
+
     setRecording(true);
     await recorder.startRecording();
   };
 
   const handleStopRecording = async () => {
+    //@ts-ignore
+    if (window.microphone) {
+      //@ts-ignore
+      window.stopMicrophone();
+      console.log('Microphone stopped');
+  }
     setRecording(false);
     const code = await recorder.stopRecording();
     setBasicCode(code);
@@ -41,6 +48,7 @@ const App: React.FC = () => {
       
       <div className="space-x-4 mb-4 h-auto">
         <button
+          id="startBtn"
           className={`px-4 py-2 rounded ${recording ? 'bg-red-500' : 'bg-blue-500'} text-white`}
           onClick={recording ? handleStopRecording : handleStartRecording}
         >
@@ -48,6 +56,7 @@ const App: React.FC = () => {
         </button>
         
         <button
+          id="stopBtn"
           className="px-4 py-2 rounded bg-green-500 text-white"
           onClick={handlePlayback}
           disabled={!basicCode}

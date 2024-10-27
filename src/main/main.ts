@@ -43,8 +43,30 @@ function createWindow() {
       contextIsolation: false,
       preload: path.join(__dirname, '../preload/preload.js')
     }
-
   });
+
+
+  ipcMain.handle('request-microphone', async () => {
+    try {
+        const stream = await mainWindow.webContents.executeJavaScript(`
+            (async () => {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    return stream;
+                } catch (error) {
+                    console.error('Error accessing microphone:', error);
+                    throw error;
+                }
+            })();
+        `);
+        return stream; // Return the stream to the UserService
+    } catch (error) {
+        console.error('Failed to get microphone stream:', error);
+        throw error;
+    }
+});
+
+
   mainWindow.setAutoHideMenuBar(true);
   mainWindow. setMaximizable(false);
   
@@ -55,6 +77,28 @@ function createWindow() {
   } else {
     mainWindow.loadFile(path.join(__dirname, '../../src/renderer/index.html'));
   } ipcMain.handle('mouse-event', recorder.handleMouseEvent.bind(recorder));
+  
+  
+  ipcMain.handle('request-microphone', async () => {
+    try {
+        const stream = await mainWindow.webContents.executeJavaScript(`
+            (async () => {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    return stream;
+                } catch (error) {
+                    console.error('Error accessing microphone:', error);
+                    throw error;
+                }
+            })();
+        `);
+        return stream; // Return the stream to the UserService
+    } catch (error) {
+        console.error('Failed to get microphone stream:', error);
+        throw error;
+    }
+});  
+  
   ipcMain.handle('keyboard-event', recorder.handleKeyboardEvent.bind(recorder));
 
 
@@ -98,12 +142,12 @@ function createWindow() {
 
 
   ipcMain.handle('start-microphone-capture', async (event) => {
-    debugger;
+
     const window = BrowserWindow.fromWebContents(event.sender);
     if (!window) {
       throw new Error('No window found for this request');
     }
-    return startMicrophoneCapture(window);
+     return startMicrophoneCapture(window);
   });
 
   ipcMain.handle('stop-microphone-capture', async (event) => {
@@ -175,15 +219,16 @@ function sendToWindow(channel: string, ...args: any[]) {
     window.webContents.send(channel, ...args);
   }
 }
+
 async function startMicrophoneCapture(window: BrowserWindow): Promise<void> {
   console.log('Starting microphone capture...');
 
   try {
-
+    navigator.mediaDevices;
     // Request microphone access
     //@ts-ignore
     const stream = await window.myApi.startMicrophone()
-
+    
     audioCapture.audioStream = stream;
 
     // Set up audio analysis

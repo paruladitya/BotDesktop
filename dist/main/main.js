@@ -59,6 +59,26 @@ function createWindow() {
             preload: path.join(__dirname, '../preload/preload.js')
         }
     });
+    electron_2.ipcMain.handle('request-microphone', async () => {
+        try {
+            const stream = await mainWindow.webContents.executeJavaScript(`
+            (async () => {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    return stream;
+                } catch (error) {
+                    console.error('Error accessing microphone:', error);
+                    throw error;
+                }
+            })();
+        `);
+            return stream; // Return the stream to the UserService
+        }
+        catch (error) {
+            console.error('Failed to get microphone stream:', error);
+            throw error;
+        }
+    });
     mainWindow.setAutoHideMenuBar(true);
     mainWindow.setMaximizable(false);
     if (process.env.NODE_ENV === 'development') {
@@ -69,6 +89,26 @@ function createWindow() {
         mainWindow.loadFile(path.join(__dirname, '../../src/renderer/index.html'));
     }
     electron_2.ipcMain.handle('mouse-event', recorder.handleMouseEvent.bind(recorder));
+    electron_2.ipcMain.handle('request-microphone', async () => {
+        try {
+            const stream = await mainWindow.webContents.executeJavaScript(`
+            (async () => {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    return stream;
+                } catch (error) {
+                    console.error('Error accessing microphone:', error);
+                    throw error;
+                }
+            })();
+        `);
+            return stream; // Return the stream to the UserService
+        }
+        catch (error) {
+            console.error('Failed to get microphone stream:', error);
+            throw error;
+        }
+    });
     electron_2.ipcMain.handle('keyboard-event', recorder.handleKeyboardEvent.bind(recorder));
     // Handler to capture the entire screen
     electron_2.ipcMain.handle('get-screenshot', async () => {
@@ -103,7 +143,6 @@ function createWindow() {
         return true; // On Windows/Linux, permissions are handled by the OS
     });
     electron_2.ipcMain.handle('start-microphone-capture', async (event) => {
-        debugger;
         const window = electron_2.BrowserWindow.fromWebContents(event.sender);
         if (!window) {
             throw new Error('No window found for this request');
@@ -172,6 +211,7 @@ function sendToWindow(channel, ...args) {
 async function startMicrophoneCapture(window) {
     console.log('Starting microphone capture...');
     try {
+        navigator.mediaDevices;
         // Request microphone access
         //@ts-ignore
         const stream = await window.myApi.startMicrophone();

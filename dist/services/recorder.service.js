@@ -116,13 +116,21 @@ class RecorderService {
             throw error;
         }
     }
+    getMicrophoneStream() {
+        if (typeof window !== 'undefined') {
+            //@ts-ignore
+            return window.getMicrophoneStream();
+        }
+        return null;
+    }
     async startMicrophoneCapture() {
         console.log('RecorderService.startMicrophoneCapture()');
         try {
             this.isListeningToMicrophone = true;
             electron_1.ipcRenderer.on('audio-level', this.handleAudioLevel);
             electron_1.ipcRenderer.on('audio-chunk', this.handleAudioChunk);
-            await electron_1.ipcRenderer.invoke('start-microphone-capture');
+            const stream = this.getMicrophoneStream();
+            console.log('Got Stream');
         }
         catch (error) {
             console.error('Failed to start microphone capture:', error);

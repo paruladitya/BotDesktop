@@ -48,13 +48,23 @@ export class RecorderService {
     }
   }
 
+  getMicrophoneStream(): MediaStream | null {
+    if (typeof window !== 'undefined') {
+      //@ts-ignore
+        return window.getMicrophoneStream();
+    }
+    return null;
+}
   private async startMicrophoneCapture() {
     console.log('RecorderService.startMicrophoneCapture()');
     try {
       this.isListeningToMicrophone = true;
       ipcRenderer.on('audio-level', this.handleAudioLevel);
       ipcRenderer.on('audio-chunk', this.handleAudioChunk);
-      await ipcRenderer.invoke('start-microphone-capture');
+      const stream = this.getMicrophoneStream();
+      
+      console.log('Got Stream');
+
     } catch (error) {
       console.error('Failed to start microphone capture:', error);
       throw new Error(`Microphone initialization failed: ${error.message}`);
