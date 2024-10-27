@@ -1,5 +1,7 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+// webpack.config.js
+const webpack = require('webpack');
 
 module.exports = {
   devtool: 'source-map',
@@ -22,7 +24,10 @@ module.exports = {
     path: path.resolve(__dirname, 'dist/renderer'),
   },
   plugins: [
-    new HtmlWebpackPlugin({
+      new webpack.ProvidePlugin({
+        global: 'global', // This will make global available in your bundled code
+      }),
+      new HtmlWebpackPlugin({
       template: './src/renderer/index.html'
     }),
   ],

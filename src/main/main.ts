@@ -1,8 +1,9 @@
 require('dotenv').config();
-import { app, BrowserWindow, ipcMain } from 'electron';
+require('electron-require');
+
+import { app, BrowserWindow, desktopCapturer, ipcMain } from 'electron';
 import * as path from 'path';
-// In main.ts
-import {  systemPreferences } from 'electron';
+import { systemPreferences } from 'electron';
 import { RecorderService } from '../services/recorder.service';
 import { PlayerService } from '../services/player.service';
 
@@ -13,8 +14,11 @@ function createWindow() {
   const mainWindow = new BrowserWindow({
     width: 1200,
     height: 800,
+    
     webPreferences: {
+      nodeIntegrationInWorker: true,
       nodeIntegration: true,
+      nodeIntegrationInSubFrames: true,
       contextIsolation: false,
       preload: path.join(__dirname, '../preload/preload.js')
     }
@@ -46,22 +50,33 @@ ipcMain.handle('mouse-event', recorder.mouseHandleEvent.bind(recorder));
 ipcMain.handle('keyboard-event', recorder.keyboardHandleEvent.bind(recorder));
 ipcMain.handle('screenshot-captured', recorder.screenshotHandleEvent.bind(recorder));
 
+// Handler to capture the entire screen
+ipcMain.handle('get-screenshot', async () => {
+  console.log('get-screenshot called');
+  const sources = await desktopCapturer.getSources({ types: ['screen'] });
+  const screenSource = sources[0]; // Get the first screen source
+
+  const { thumbnail } = screenSource; // Thumbnail is a native image
+  return thumbnail.toPNG(); // Return the screenshot as PNG buffer
+});
 
 ipcMain.handle('start-recording', async () => {
+  console.log('start-recording called');
   await recorder.startRecording();
 });
 
 ipcMain.handle('stop-recording', async () => {
+  console.log('stop-recording called');
   return await recorder.stopRecording();
 });
 
 ipcMain.handle('execute-basic-code', async (_, code: string) => {
+  console.log('execute-basic-code called with:', code);
   await player.executeBasicCode(code);
 });
 
-
-// Add microphone permission check for macOS
 ipcMain.handle('check-microphone-permission', async () => {
+  console.log('check-microphone-permission called');
   if (process.platform === 'darwin') {
     const status = await systemPreferences.getMediaAccessStatus('microphone');
     if (status !== 'granted') {
@@ -70,8 +85,7 @@ ipcMain.handle('check-microphone-permission', async () => {
     }
     return true;
   }
-  // On Windows/Linux, permissions are handled by the OS
-  return true;
+  return true; // On Windows/Linux, permissions are handled by the OS
 });
 
 // Enable required permissions

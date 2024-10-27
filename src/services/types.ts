@@ -11,6 +11,8 @@ export interface AutomationAction {
   };
 }
 
+
+
 export interface AutomationEvent {
   type: 'click' | 'type' | 'move';
   identifier: string;

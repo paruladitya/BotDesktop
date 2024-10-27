@@ -24,9 +24,9 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 require('dotenv').config();
+require('electron-require');
 const electron_1 = require("electron");
 const path = __importStar(require("path"));
-// In main.ts
 const electron_2 = require("electron");
 const recorder_service_1 = require("../services/recorder.service");
 const player_service_1 = require("../services/player.service");
@@ -37,7 +37,9 @@ function createWindow() {
         width: 1200,
         height: 800,
         webPreferences: {
+            nodeIntegrationInWorker: true,
             nodeIntegration: true,
+            nodeIntegrationInSubFrames: true,
             contextIsolation: false,
             preload: path.join(__dirname, '../preload/preload.js')
         }
@@ -64,17 +66,28 @@ electron_1.app.on('activate', () => {
 electron_1.ipcMain.handle('mouse-event', recorder.mouseHandleEvent.bind(recorder));
 electron_1.ipcMain.handle('keyboard-event', recorder.keyboardHandleEvent.bind(recorder));
 electron_1.ipcMain.handle('screenshot-captured', recorder.screenshotHandleEvent.bind(recorder));
+// Handler to capture the entire screen
+electron_1.ipcMain.handle('get-screenshot', async () => {
+    console.log('get-screenshot called');
+    const sources = await electron_1.desktopCapturer.getSources({ types: ['screen'] });
+    const screenSource = sources[0]; // Get the first screen source
+    const { thumbnail } = screenSource; // Thumbnail is a native image
+    return thumbnail.toPNG(); // Return the screenshot as PNG buffer
+});
 electron_1.ipcMain.handle('start-recording', async () => {
+    console.log('start-recording called');
     await recorder.startRecording();
 });
 electron_1.ipcMain.handle('stop-recording', async () => {
+    console.log('stop-recording called');
     return await recorder.stopRecording();
 });
 electron_1.ipcMain.handle('execute-basic-code', async (_, code) => {
+    console.log('execute-basic-code called with:', code);
     await player.executeBasicCode(code);
 });
-// Add microphone permission check for macOS
 electron_1.ipcMain.handle('check-microphone-permission', async () => {
+    console.log('check-microphone-permission called');
     if (process.platform === 'darwin') {
         const status = await electron_2.systemPreferences.getMediaAccessStatus('microphone');
         if (status !== 'granted') {
@@ -83,8 +96,7 @@ electron_1.ipcMain.handle('check-microphone-permission', async () => {
         }
         return true;
     }
-    // On Windows/Linux, permissions are handled by the OS
-    return true;
+    return true; // On Windows/Linux, permissions are handled by the OS
 });
 // Enable required permissions
 electron_1.app.commandLine.appendSwitch('enable-speech-dispatcher');
